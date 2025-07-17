@@ -13,14 +13,14 @@ def show_image(image: list):
     plt.axis('off')  # Turn off axis labels
     plt.show()
 
-line = 0
+sample = 0
 with open('semeion.data', mode='r') as file:
     data_reader = csv.reader(file, delimiter=' ')
     for row in data_reader:
         image = np.array(row[:256], dtype=float).reshape(16,16)
         digit = np.array(row[256:-1])
-        if line < 4:
+        if sample < 4:
             print(image)
             print(digit)
             show_image(image)
-        line += 1
+        sample += 1
