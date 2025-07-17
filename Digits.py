@@ -7,20 +7,30 @@ import matplotlib.pyplot as plt
 # uv pip install numpy matplotlib
 # uv run Digits.py
 
-def show_image(image: list):
-    a = image
-    plt.imshow(a)
-    plt.axis('off')  # Turn off axis labels
-    plt.show()
+class Digits:
+    def show_image(self, image: list):
+        a = image
+        plt.imshow(a)
+        plt.axis('off')  # Turn off axis labels
+        plt.show()
 
-sample = 0
-with open('semeion.data', mode='r') as file:
-    data_reader = csv.reader(file, delimiter=' ')
-    for row in data_reader:
-        image = np.array(row[:256], dtype=float).reshape(16,16)
-        digit = np.array(row[256:-1])
-        if sample < 4:
-            print(image)
-            print(digit)
-            show_image(image)
-        sample += 1
+    def get_digit(self, digit: np.array):
+        _, index = np.unique(digit, return_index=True)
+        return index[-1]
+
+    def __init__(self) -> None:
+        with open('semeion.data', mode='r') as file:
+            data = csv.reader(file, delimiter=' ')
+            for row in data:
+                image = np.array(row[:256], dtype=float).reshape(16,16)
+                digit = np.array(row[256:-1])
+                if data.line_num < 3:
+                    print(image)
+                    print(digit)
+                    print(self.get_digit(digit))
+                    self.show_image(image)
+        
+
+if __name__ == "__main__":
+    d = Digits()
+    
