@@ -156,7 +156,7 @@ if __name__ == "__main__":
         test = mlx.array(d.X_test[i])
         test_digit = d.digit_test[i]
         output = mlp(test)
-        predicted_digit = mlx.array.item(mlx.argmax(output))
+        predicted_digit = mlx.argmax(output).item()
         # print(predicted_digit, test_digit)
         if predicted_digit != test_digit:
             errors += 1
