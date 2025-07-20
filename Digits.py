@@ -80,7 +80,7 @@ class Digits:
         # self.show_image(self.X_test[-1])
         # print(self.get_digit(self.y_test[-1]))
 
-    def __init__(self, samples: int = 1593, test_size: float = 0.42) -> None:
+    def __init__(self, samples: int = 1593, test_size: float = 0.18) -> None:
         print("Loading and preparing the training data")
         # 1593 records, train 1274, test 319
         with open('semeion.data', mode='r') as file:
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
     optimizer = opt.Adam(learning_rate=0.001)
-    n_epochs = 24
+    n_epochs = 64
     for epoch in range(n_epochs):
         loss, grads = loss_and_grad_fn(mlp, X_train, y_train)
         # Update the model parameters
@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
         if epoch % 10 == 0:
             print(f"Loss after {epoch} steps: {loss.item():.4f}")
-        if loss.item() < 0.004:
+        if loss.item() < 0.001:
             print(f"Final Loss after {epoch} steps: {loss.item():.4f}")
             break
 
@@ -162,4 +162,4 @@ if __name__ == "__main__":
             errors += 1
             # print(predicted_digit, test_digit)
 
-    print(f"Total errors: {errors} out of {tests} test samples, {errors / tests * 100 :.2}%")
+    print(f"Total errors: {errors} out of {tests} test samples, {errors / tests * 100 :.3}%")
