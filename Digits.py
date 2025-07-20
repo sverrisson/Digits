@@ -163,7 +163,7 @@ if __name__ == "__main__":
             if errors <= 3:
                 # Lets investigate the failed samples
                 print(predicted_digit, test_digit)
-                image = np.array(test)
+                image = np.array(test, copy=False)
                 d.show_image(image)
 
 
