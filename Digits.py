@@ -2,7 +2,7 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-import mlx.core as mx
+import mlx.core as mlx
 import mlx.nn as nn
 import mlx.optimizers as opt
 from mlx.utils import tree_map
@@ -12,13 +12,13 @@ from mlx.utils import tree_map
 # uv pip install -U numpy matplotlib mlx scikit-learn
 # uv run Digits.py
 
-# A simple loss function.
+# A simple loss function on the training set.
 def loss_fn(model, X, y):
-    return mx.mean(nn.losses.cross_entropy(model(X), y))
+    return mlx.mean(nn.losses.cross_entropy(model(X), y))
 
 # compute the accuracy of the model on the validation set
 def eval_fn(model, X, y):
-    return mx.mean(mx.argmax(model(X), axis=1) == y)
+    return mlx.mean(mlx.argmax(model(X), axis=1) == y)
 
 # Neural network model class
 class MLP(nn.Module):
@@ -36,7 +36,7 @@ class MLP(nn.Module):
     # Computation implementation
     def __call__(self, x):
         for i, l in enumerate(self.layers):
-            x = mx.maximum(x, 0.0) if i > 0 else x
+            x = mlx.maximum(x, 0.0) if i > 0 else x
             x = l(x)
         return x
 
@@ -67,6 +67,11 @@ class Digits:
             stratify=None        # Set to y if you want stratified sampling
         )
 
+        # Store the digits
+        self.digit_test = np.array(list(map(self.get_digit, self.y_test.tolist())))
+        print(self.digit_test)
+        print(self.digit_test.shape)
+
         print(self.X_train.shape)
         # self.show_image(self.X_train[-1])
         # print(self.get_digit(self.y_train[-1]))
@@ -75,8 +80,8 @@ class Digits:
         # self.show_image(self.X_test[-1])
         # print(self.get_digit(self.y_test[-1]))
 
-
-    def __init__(self, samples: int = 1593, test_size: float = 0.20) -> None:
+    def __init__(self, samples: int = 1593, test_size: float = 0.42) -> None:
+        print("Loading and preparing the training data")
         # 1593 records, train 1274, test 319
         with open('semeion.data', mode='r') as file:
             data = csv.reader(file, delimiter=' ')
@@ -94,10 +99,14 @@ class Digits:
         
         # Split the data for training and testing
         self.split_for_testing(test_size)
-        
 
 if __name__ == "__main__":
     d = Digits()
+
+    print("Train the Neural Network and store the weights")
+
+    # Run on the CPU or GPU
+    # mlx.set_default_device(mlx.gpu)
 
     mlp = MLP(256, 10)
     print(mlp)
@@ -107,12 +116,12 @@ if __name__ == "__main__":
     print(params["layers"][0]["weight"].shape) # (128, 256)
     print(params["layers"][0])
 
-    X_train = mx.array(d.X_train)
-    y_train = mx.array(d.y_train)
+    X_train = mlx.array(d.X_train)
+    y_train = mlx.array(d.y_train)
     print(f"Training samples: {X_train.shape}")
 
-    X_test = mx.array(d.X_test)
-    y_test = mx.array(d.y_test)
+    X_test = mlx.array(d.X_test)
+    y_test = mlx.array(d.y_test)
     print(f"Testing samples: {X_test.shape}")
 
     loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
@@ -120,20 +129,37 @@ if __name__ == "__main__":
     n_epochs = 60
     for epoch in range(n_epochs):
         loss, grads = loss_and_grad_fn(mlp, X_train, y_train)
+        # Update the model parameters
         mlp.update(optimizer.apply_gradients(grads, mlp))
-        mx.eval(mlp.parameters(), optimizer.state)
+
+        # Force a graph evaluation
+        mlx.eval(mlp.parameters(), optimizer.state)
+
         if epoch % 10 == 0:
             print(f"Loss after {epoch} steps: {loss.item():.4f}")
         if loss.item() < 0.004:
-            mlp.eval()
             print(f"Final Loss after {epoch} steps: {loss.item():.4f}")
             break
-    
+
+    # Calculate accuracy on the validation set
+    accuracy = eval_fn(mlp, X_test, d.digit_test)  # mlx.argmax(mlp(X_test), axis=1)
+    print(f"{accuracy = }")
+
     # Save the weights
     mlp.save_weights('Digits_weights.npz')
 
     # Test manually
-    test = d.X_test[-1]
-    test_y = d.y_test[-1]
-    print(test, test_y, d.get_digit(test_y))
-   
+    print("Test manually")
+    tests = d.X_test.shape[0]
+    errors = 0
+    for i in range(tests):
+        test = mlx.array(d.X_test[i])
+        test_digit = d.digit_test[i]
+        output = mlp(test)
+        predicted_digit = mlx.array.item(mlx.argmax(output))
+        # print(predicted_digit, test_digit)
+        if predicted_digit != test_digit:
+            errors += 1
+            print(predicted_digit, test_digit)
+
+    print(f"Total errors: {errors} out of {tests} test samples")
