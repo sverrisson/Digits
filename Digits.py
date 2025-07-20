@@ -99,8 +99,6 @@ class Digits:
 if __name__ == "__main__":
     d = Digits()
 
-    exit(0)
-
     mlp = MLP(256, 10)
     print(mlp)
     params = mlp.parameters()
@@ -109,6 +107,20 @@ if __name__ == "__main__":
     print(params["layers"][0]["weight"].shape) # (128, 256)
     print(params["layers"][0])
 
-    loss_and_grad = nn.value_and_grad(mlp, l2_loss)
-    print(loss_and_grad)
+    loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
+    optimizer = opt.Adam(learning_rate=0.001)
+    X_train = mx.array(d.X_train)
+    y_train = mx.array(d.y_train)
+    print(f"Training samples: {X_train.shape}")
+
+    n_epochs = 60
+    for epoch in range(n_epochs):
+        loss, grads = loss_and_grad_fn(mlp, X_train, y_train)
+        mlp.update(optimizer.apply_gradients(grads, mlp))
+        mx.eval(mlp.parameters(), optimizer.state)
+        if epoch % 10 == 0:
+            print(f"Loss after {epoch} steps: {loss.item():.4f}")
+        if loss.item() < 0.004:
+            print(f"Final Loss after {epoch} steps: {loss.item():.4f}")
+            break
     
