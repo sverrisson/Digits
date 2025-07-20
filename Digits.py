@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
     optimizer = opt.Adam(learning_rate=0.001)
-    n_epochs = 60
+    n_epochs = 24
     for epoch in range(n_epochs):
         loss, grads = loss_and_grad_fn(mlp, X_train, y_train)
         # Update the model parameters
@@ -146,7 +146,7 @@ if __name__ == "__main__":
     print(f"{accuracy = }")
 
     # Save the weights
-    mlp.save_weights('Digits_weights.npz')
+    # mlp.save_weights('Digits_weights.npz')
 
     # Test manually
     print("Test manually")
@@ -160,6 +160,6 @@ if __name__ == "__main__":
         # print(predicted_digit, test_digit)
         if predicted_digit != test_digit:
             errors += 1
-            print(predicted_digit, test_digit)
+            # print(predicted_digit, test_digit)
 
-    print(f"Total errors: {errors} out of {tests} test samples")
+    print(f"Total errors: {errors} out of {tests} test samples, {errors / tests * 100 :.2}%")
