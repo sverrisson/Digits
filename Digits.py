@@ -160,6 +160,11 @@ if __name__ == "__main__":
         # print(predicted_digit, test_digit)
         if predicted_digit != test_digit:
             errors += 1
-            # print(predicted_digit, test_digit)
+            if errors <= 3:
+                # Lets investigate the failed samples
+                print(predicted_digit, test_digit)
+                image = np.array(test)
+                d.show_image(image)
+
 
     print(f"Total errors: {errors} out of {tests} test samples, {errors / tests * 100 :.3}%")
