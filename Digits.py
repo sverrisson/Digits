@@ -23,22 +23,23 @@ def eval_fn(model, X, y):
 # Neural network model class
 class MLP(nn.Module):
     # NN model setup
-    def __init__(self, in_dims: int, out_dims: int):
+    def __init__(self, input_dim: int, output_dim: int, layers_dim: int = 128, num_layers: int = 2):
         super().__init__()
 
         # Set up layers
+        layer_sizes = [input_dim] + [layers_dim] * num_layers + [output_dim]
+        print(f'{layer_sizes = }')
         self.layers = [
-            nn.Linear(in_dims, 128),
+            nn.Linear(input_dim, 128),
             nn.Linear(128, 128),
-            nn.Linear(128, out_dims)
+            nn.Linear(128, output_dim)
         ]
 
     # Computation implementation
     def __call__(self, x):
-        for i, l in enumerate(self.layers):
-            x = mlx.maximum(x, 0.0) if i > 0 else x
-            x = l(x)
-        return x
+        for l in self.layers[:-1]:
+            x = mlx.maximum(l(x), 0.0)
+        return self.layers[-1](x)
 
 class Digits:
     features = []  # Features
