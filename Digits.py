@@ -107,12 +107,16 @@ if __name__ == "__main__":
     print(params["layers"][0]["weight"].shape) # (128, 256)
     print(params["layers"][0])
 
-    loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
-    optimizer = opt.Adam(learning_rate=0.001)
     X_train = mx.array(d.X_train)
     y_train = mx.array(d.y_train)
     print(f"Training samples: {X_train.shape}")
 
+    X_test = mx.array(d.X_test)
+    y_test = mx.array(d.y_test)
+    print(f"Testing samples: {X_test.shape}")
+
+    loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
+    optimizer = opt.Adam(learning_rate=0.001)
     n_epochs = 60
     for epoch in range(n_epochs):
         loss, grads = loss_and_grad_fn(mlp, X_train, y_train)
@@ -121,6 +125,15 @@ if __name__ == "__main__":
         if epoch % 10 == 0:
             print(f"Loss after {epoch} steps: {loss.item():.4f}")
         if loss.item() < 0.004:
+            mlp.eval()
             print(f"Final Loss after {epoch} steps: {loss.item():.4f}")
             break
     
+    # Save the weights
+    mlp.save_weights('Digits_weights.npz')
+
+    # Test manually
+    test = d.X_test[-1]
+    test_y = d.y_test[-1]
+    print(test, test_y, d.get_digit(test_y))
+   
