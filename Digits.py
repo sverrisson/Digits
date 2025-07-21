@@ -30,9 +30,7 @@ class MLP(nn.Module):
         layer_sizes = [input_dim] + [layers_dim] * num_layers + [output_dim]
         print(f'{layer_sizes = }')
         self.layers = [
-            nn.Linear(input_dim, 128),
-            nn.Linear(128, 128),
-            nn.Linear(128, output_dim)
+            nn.Linear(idim, odim) for idim, odim in zip(layer_sizes[:-1], layer_sizes[1:])
         ]
 
     # Computation implementation
@@ -70,14 +68,14 @@ class Digits:
 
         # Store the digits
         self.digit_test = np.array(list(map(self.get_digit, self.y_test.tolist())))
-        print(self.digit_test)
-        print(self.digit_test.shape)
+        # print(self.digit_test)
+        # print(self.digit_test.shape)
 
-        print(self.X_train.shape)
+        # print(self.X_train.shape)
         # self.show_image(self.X_train[-1])
         # print(self.get_digit(self.y_train[-1]))
         # print('')
-        print(self.X_test.shape)
+        # print(self.X_test.shape)
         # self.show_image(self.X_test[-1])
         # print(self.get_digit(self.y_test[-1]))
 
@@ -114,16 +112,16 @@ if __name__ == "__main__":
     params = mlp.parameters()
     shapes = tree_map(lambda p: p.shape, mlp.parameters())
     print(shapes)
-    print(params["layers"][0]["weight"].shape) # (128, 256)
-    print(params["layers"][0])
+    # print(params["layers"][0]["weight"].shape) # (128, 256)
+    # print(params["layers"][0])
 
     X_train = mlx.array(d.X_train)
     y_train = mlx.array(d.y_train)
-    print(f"Training samples: {X_train.shape}")
+    print(f"Training samples: {X_train.shape[0]}")
 
     X_test = mlx.array(d.X_test)
     y_test = mlx.array(d.y_test)
-    print(f"Testing samples: {X_test.shape}")
+    print(f"Testing samples: {X_test.shape[0]}")
 
     loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
     optimizer = opt.Adam(learning_rate=0.001)
@@ -136,7 +134,7 @@ if __name__ == "__main__":
         # Force a graph evaluation
         mlx.eval(mlp.parameters(), optimizer.state)
 
-        if epoch % 10 == 0:
+        if epoch % 20 == 0:
             print(f"Loss after {epoch} steps: {loss.item():.4f}")
         if loss.item() < 0.001:
             print(f"Final Loss after {epoch} steps: {loss.item():.4f}")
@@ -147,7 +145,7 @@ if __name__ == "__main__":
     print(f"{accuracy = }")
 
     # Save the weights
-    # mlp.save_weights('Digits_weights.npz')
+    mlp.save_weights('Digits_weights.npz')
 
     # Test manually
     print("Test manually")
