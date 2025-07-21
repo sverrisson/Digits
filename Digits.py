@@ -6,6 +6,7 @@ import mlx.core as mlx
 import mlx.nn as nn
 import mlx.optimizers as opt
 from mlx.utils import tree_map
+from functools import partial
 
 # uv venv
 # source .venv/bin/activate
@@ -126,8 +127,9 @@ if __name__ == "__main__":
 
     loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
     optimizer = opt.Adam(learning_rate=0.001)
-    state = [mlp.parameters(), optimizer.state]
+    state = [mlp.state, optimizer.state]
 
+    # @partial(mlx.compile, inputs=state, outputs=state)
     def step(X, y):
         loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
         loss, grads = loss_and_grad_fn(mlp, X, y)
