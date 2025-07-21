@@ -126,15 +126,18 @@ if __name__ == "__main__":
 
     loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
     optimizer = opt.Adam(learning_rate=0.001)
+    state = [mlp.parameters(), optimizer.state]
+
+    def step(X, y):
+        loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
+        loss, grads = loss_and_grad_fn(mlp, X, y)
+        optimizer.update(mlp, grads)
+        return loss
+
     n_epochs = 64
     for epoch in range(n_epochs):
-        loss, grads = loss_and_grad_fn(mlp, X_train, y_train)
-        # Update the model parameters
-        mlp.update(optimizer.apply_gradients(grads, mlp))
-
-        # Force a graph evaluation
-        mlx.eval(mlp.parameters(), optimizer.state)
-
+        loss = step(X_train, y_train)
+        mlx.eval(state)
         if epoch % 20 == 0:
             print(f"Loss after {epoch} steps: {loss.item():.4f}")
         if loss.item() < 0.001:
