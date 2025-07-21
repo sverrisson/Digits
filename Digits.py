@@ -14,7 +14,8 @@ from mlx.utils import tree_map
 
 # A simple loss function on the training set.
 def loss_fn(model, X, y):
-    return mlx.mean(nn.losses.cross_entropy(model(X), y))
+    logits = model(X).squeeze() # Removes axes of length one
+    return nn.losses.binary_cross_entropy(logits, y)
 
 # compute the accuracy of the model on the validation set
 def eval_fn(model, X, y):
@@ -145,7 +146,7 @@ if __name__ == "__main__":
     print(f"{accuracy = }")
 
     # Save the weights
-    mlp.save_weights('Digits_weights.npz')
+    # mlp.save_weights('Digits_weights.npz')
 
     # Test manually
     print("Test manually")
