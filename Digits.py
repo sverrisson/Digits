@@ -129,7 +129,8 @@ if __name__ == "__main__":
     optimizer = opt.Adam(learning_rate=0.001)
     state = [mlp.state, optimizer.state]
 
-    # @partial(mlx.compile, inputs=state, outputs=state)
+    # Compile the step function to run on GPU
+    @partial(mlx.compile, inputs=state, outputs=state)
     def step(X, y):
         loss_and_grad_fn = nn.value_and_grad(mlp, loss_fn)
         loss, grads = loss_and_grad_fn(mlp, X, y)
